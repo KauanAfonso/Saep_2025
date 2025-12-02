@@ -28,7 +28,7 @@ class Log(models.Model):
     id_product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='logs')
     status = models.CharField(choices=[('Entrada', 'Entrada'), ('Saida', 'Saida')], max_length=10)
     timestamp = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    id_user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     
     def str(self):
         return f"Log for {self.id_product.name} at {self.timestamp}"

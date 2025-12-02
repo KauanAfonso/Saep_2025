@@ -47,9 +47,10 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'cod', 'description']
         
 class StockSerializer(serializers.ModelSerializer):
+    product = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = Stock
-        fields = ['id', 'id_product', 'quantity', 'min_quantity']
+        fields = ['id', 'id_product', 'quantity', 'min_quantity', "product"]
         
         def create(self, validated_data):
             stock = Stock(
@@ -62,6 +63,8 @@ class StockSerializer(serializers.ModelSerializer):
             return stock
         
 class LogSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    product = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = Log
-        fields = ['id', 'id_product', 'status', 'timestamp', 'user']
+        fields = ['id', 'id_product', 'status', 'timestamp', 'id_user' , "user", "product"]
