@@ -47,24 +47,15 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'cod', 'description']
         
 class StockSerializer(serializers.ModelSerializer):
-    product = serializers.StringRelatedField(read_only=True)
+    product = ProductSerializer(source='id_product', read_only=True)
     class Meta:
         model = Stock
-        fields = ['id', 'id_product', 'quantity', 'min_quantity', "product"]
+        fields = ['id', 'id_product', 'quantity', 'min_quantity', "is_below_min", "product"]
         
-        def create(self, validated_data):
-            stock = Stock(
-                id_product=validated_data['id_product'],
-                quantity=validated_data['quantity'],
-                min_quantity=validated_data['min_quantity']
-            )
-            
-            stock.save()
-            return stock
-        
+
 class LogSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
-    product = serializers.StringRelatedField(read_only=True)
+    id_user = UserSerializer(read_only=True)
+    id_product = ProductSerializer(read_only=True)
     class Meta:
         model = Log
-        fields = ['id', 'id_product', 'status', 'timestamp', 'id_user' , "user", "product"]
+        fields = ['id', 'id_product', 'status', 'timestamp', 'id_user' , "id_user", "id_product"]

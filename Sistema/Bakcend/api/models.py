@@ -16,7 +16,7 @@ class Product(models.Model):
         return self.name
     
 class Stock(models.Model):
-    id_product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='stocks')
+    id_product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='stocks', unique=True)
     quantity = models.IntegerField(null=False, blank=False)  
     min_quantity = models.IntegerField(null=False, blank=False)
     is_below_min = models.BooleanField(default=False)
