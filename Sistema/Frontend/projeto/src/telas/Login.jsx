@@ -11,7 +11,8 @@ const loginSchema = z.object({
 });
 
 export default function Login() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -24,11 +25,17 @@ export default function Login() {
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/login/", data);
 
-      console.log("Resposta da API:", response.data);
-      navigate("/")
+      // Armazenando dados no LocalStorage
+      localStorage.setItem("token", JSON.stringify(response.data.token)); // access/refresh
+      localStorage.setItem("user", JSON.stringify(response.data.user)); // id, username, email
+
+      console.log("Login realizado:", response.data);
+
+      navigate("/"); // vai para a Home
 
     } catch (error) {
       console.error("Erro ao fazer login:", error);
+      alert("Usuário ou senha inválidos");
     }
   };
 

@@ -1,54 +1,123 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "react-router-dom";
 
-export function Produtos() {
+// Validação Zod
+const productSchema = z.object({
+  name: z.string().min(2, "Nome obrigatório"),
+  cod: z.string().min(1, "Código obrigatório"),
+  description: z.string().optional(),
+});
+
+export default function Produtos() {
   const [products, setProducts] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
 
-  const product_endpoint = "http://127.0.0.1:8000/api/products/";
+  const endpoint = "http://127.0.0.1:8000/api/products/";
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get(product_endpoint);
-        setProducts(response.data);
-      } catch (err) {
-        console.error("Erro ao carregar produtos:", err);
-        setError("Erro ao carregar produtos");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: zodResolver(productSchema),
+    defaultValues: { name: "", cod: "", description: "" }
+  });
 
-    fetchProducts();
-  }, []);
+  useEffect(() => { loadProducts(); }, []);
 
-  const handleEdit = (id) => {
-    alert(`Editar produto de ID: ${id}`);
-    // Aqui você pode navegar para uma tela de edição ou abrir um modal
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Tem certeza que deseja excluir este produto?")) return;
-
+  async function loadProducts(filterName) {
+    setLoading(true);
     try {
-      await axios.delete(`${product_endpoint}${id}/`);
-      setProducts(products.filter((p) => p.id !== id));
-      alert("Produto excluído com sucesso!");
-    } catch (err) {
-      console.error("Erro ao excluir produto:", err);
-      alert("Erro ao excluir produto");
+      const url = filterName ? `${endpoint}?name=${filterName}` : endpoint;
+      const res = await axios.get(url);
+      setProducts(res.data);
+    } catch {
+      alert("Erro ao carregar produtos");
     }
-  };
+    setLoading(false);
+  }
 
-  if (loading) return <p>Carregando produtos...</p>;
-  if (error) return <p>{error}</p>;
+  async function saveProduct(data) {
+    try {
+      if (editingId) {
+        await axios.put(`${endpoint}${editingId}/`, data);
+        alert("Produto atualizado!");
+      } else {
+        await axios.post(endpoint, data);
+        alert("Produto criado!");
+      }
+      reset();
+      setEditingId(null);
+      loadProducts();
+    } catch {
+      alert("Erro ao salvar produto");
+    }
+  }
+
+  function editProduct(prod) {
+    setEditingId(prod.id);
+    reset(prod);
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm("Deseja realmente excluir?")) return;
+    try {
+      await axios.delete(`${endpoint}${id}/`);
+      alert("Excluído!");
+      loadProducts();
+    } catch {
+      alert("Erro ao excluir");
+    }
+  }
+
+  function cancelEdit() {
+    reset();
+    setEditingId(null);
+  }
+
+  async function handleSearch() {
+    loadProducts(search.trim());
+  }
+
+  if (loading) return <p>Carregando...</p>;
 
   return (
-    <div>
-      <h2>Lista de Produtos</h2>
-      <table border={1} cellPadding={5} cellSpacing={0}>
+    <div className="container">
+
+      <Link to="/">
+        <button>⬅ Voltar</button>
+      </Link>
+
+      <h2>Gerenciar Produtos</h2>
+
+      {/* 🔎 BUSCA */}
+      <div className="search">
+        <input
+          placeholder="Pesquisar por nome"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button onClick={handleSearch}>Buscar</button>
+        <button onClick={() => { setSearch(""); loadProducts(); }}>Limpar</button>
+      </div>
+
+      {/* FORM */}
+      <form onSubmit={handleSubmit(saveProduct)}>
+        <input placeholder="Nome" {...register("name")} />
+        {errors.name && <p style={{color:"red"}}>{errors.name.message}</p>}
+
+        <input placeholder="Código" {...register("cod")} />
+        {errors.cod && <p style={{color:"red"}}>{errors.cod.message}</p>}
+
+        <input placeholder="Descrição" {...register("description")} />
+
+        <button type="submit">{editingId ? "Atualizar" : "Cadastrar"}</button>
+        {editingId && <button onClick={cancelEdit}>Cancelar</button>}
+      </form>
+
+      <table>
         <thead>
           <tr>
             <th>ID</th>
@@ -58,21 +127,23 @@ export function Produtos() {
             <th>Ações</th>
           </tr>
         </thead>
+
         <tbody>
-          {products.map((prod) => (
-            <tr key={prod.id}>
-              <td>{prod.id}</td>
-              <td>{prod.name}</td>
-              <td>{prod.cod}</td>
-              <td>{prod.description}</td>
+          {products.map(p => (
+            <tr key={p.id}>
+              <td>{p.id}</td>
+              <td>{p.name}</td>
+              <td>{p.cod}</td>
+              <td>{p.description}</td>
               <td>
-                <button onClick={() => handleEdit(prod.id)}>Editar</button>
-                <button onClick={() => handleDelete(prod.id)}>Excluir</button>
+                <button onClick={() => editProduct(p)}>Editar</button>
+                <button className="logout" onClick={() => deleteProduct(p.id)}>Excluir</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
     </div>
   );
 }

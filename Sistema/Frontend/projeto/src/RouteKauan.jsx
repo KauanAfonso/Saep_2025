@@ -1,17 +1,24 @@
 import { Routes, Route } from "react-router-dom";
+import Login from "./telas/Login";
+import Home from "./telas/Home";
+import Estoque from "./telas/Estoque/Estoque";
+import { Log } from "./telas/Log/Log";
+import { Usuarios } from "./telas/Usuarios/Usuarios";
+import Produtos from "./telas/Produtos/Produtos";
+import PrivateRoute from "./PrivateRoute";
 
-import Home from "./telas/Home.jsx";
-import Login from "./telas/login.jsx";
-import { Produtos } from "./telas/Produtos/Produtos.jsx";
-import { Estoque } from "./telas/Estoque/Estoque.jsx"
-
-export function RouteKauan() {
+export default function RouteKauan() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      {/* Rota pública */}
       <Route path="/login" element={<Login />} />
-      <Route path="/produtos" element={<Produtos/>}/>
-      <Route path="/estoque" element={<Estoque/>}/>
+
+      {/* Rotas protegidas */}
+      <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+      <Route path="/estoque" element={<PrivateRoute><Estoque /></PrivateRoute>} />
+      <Route path="/produtos" element={<PrivateRoute><Produtos /></PrivateRoute>} />
+      <Route path="/usuarios" element={<PrivateRoute><Usuarios /></PrivateRoute>} />
+      <Route path="/log" element={<PrivateRoute><Log /></PrivateRoute>} />
 
     </Routes>
   );

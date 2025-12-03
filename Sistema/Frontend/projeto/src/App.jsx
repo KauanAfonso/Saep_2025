@@ -3,7 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { BrowserRouter } from "react-router-dom";
-import { RouteKauan } from './RouteKauan';
+import RouteKauan from "./RouteKauan";
 
 function App() {
  

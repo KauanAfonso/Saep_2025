@@ -54,8 +54,13 @@ class StockSerializer(serializers.ModelSerializer):
         
 
 class LogSerializer(serializers.ModelSerializer):
-    id_user = UserSerializer(read_only=True)
-    id_product = ProductSerializer(read_only=True)
+    user_detail = UserSerializer(source="id_user", read_only=True)
+    product_detail = ProductSerializer(source="id_product", read_only=True)
+
+    id_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    id_product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True)
+
     class Meta:
         model = Log
-        fields = ['id', 'id_product', 'status', 'timestamp', 'id_user' , "id_user", "id_product"]
+        fields = ['id', 'id_product', 'product_detail', 'status', 'timestamp', 'id_user', 'user_detail']
+
